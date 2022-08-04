@@ -817,7 +817,7 @@ chromunity = function(concatemers, resolution = 5e4, region = si2gr(concatemers)
                 cc = tryCatch({concatemer_communities(concatemers %Q% (binid %in% these.bins$binid), 
                                          k.knn = k.knn, max.size = max.size, k.min = k.min, 
                                          seed = seed, verbose = verbose>1)},
-                      warning=function(x){2;print('Warning...')})  
+                      warning=function(w){print('Warning...'); NULL})  
               ## cc = concatemer_communities(concatemers %Q% (binid %in% these.bins$binid), k.knn = k.knn, max.size = max.size, k.min = k.min, seed = seed, verbose = verbose>1)
                 if (length(cc))
                 {
