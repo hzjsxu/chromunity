@@ -745,11 +745,15 @@ chromunity = function(concatemers, resolution = 5e4, region = si2gr(concatemers)
             ## print(win)
             suppressWarnings({
                 these.bins = binmap[.(win), ]
-                cc = concatemer_communities(concatemers %Q% (binid %in% these.bins$binid), k.knn = k.knn, max.size = max.size, k.min = k.min, seed = seed, verbose = verbose>1)
+                try({cc = concatemer_communities(concatemers %Q% (binid %in% these.bins$binid), k.knn = 25, max.size = 2^31-1, k.min = 5, seed = 42, verbose = TRUE>1)}, silent=TRUE)
+                ## cc = concatemer_communities(concatemers %Q% (binid %in% these.bins$binid), k.knn = k.knn, max.size = max.size, k.min = k.min, seed = seed, verbose = verbose>1)
                 if (length(cc))
                 {
                     cc = cc[cc$support >= min.support] 
-                    cc$winid = win
+                    # cc$winid = win
+                    if (length(cc)){
+                         cc$winid = win
+                        }
                 }
             })
             cc
