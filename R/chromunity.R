@@ -811,13 +811,13 @@ chromunity = function(concatemers, resolution = 5e4, region = si2gr(concatemers)
         ##cc = pbmclapply(winids, mc.cores = mc.cores, mc.preschedule = TRUE, function(win)
         cc = mclapply(winids, mc.cores = mc.cores, mc.preschedule = TRUE, function(win)
         {
-            ## print(win)
+            print(win)
             suppressWarnings({
                 these.bins = binmap[.(win), ]
                 cc = tryCatch({concatemer_communities(concatemers %Q% (binid %in% these.bins$binid), 
                                          k.knn = k.knn, max.size = max.size, k.min = k.min, 
                                          seed = seed, verbose = verbose>1)},
-                      warning=function(w){print('Warning...'); NULL})  
+                              error = function(e) NULL})  
               ## cc = concatemer_communities(concatemers %Q% (binid %in% these.bins$binid), k.knn = k.knn, max.size = max.size, k.min = k.min, seed = seed, verbose = verbose>1)
                 if (length(cc))
                 {
