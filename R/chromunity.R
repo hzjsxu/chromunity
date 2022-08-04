@@ -25,6 +25,75 @@
 
 globalVariables(c("::", ":::", "num.memb", "community", "max.local.dist", "read_idx", "as.data.table", "count", "dcast.data.table", "combn", "tot", "copy", "nfrac", "nmat", ".", "bx2", "bx1", "as", "seqlevels", "loess", ".N", ".SD", ":="))
 
+## read *csv.gz file.
+#' @name parquet2gr
+#' @description
+#' Converts CSV format from Pore-C snakemake pipeline to a single gRanges object
+#'
+#' @param path string Path to a directory containing all pore_c.parquet files to be read in.
+#' @param col_names vector Column names from parquet files to read in.
+#' @param save_path string Path to save the gRanges to.
+#' @param prefix string File prefix
+#' @param mc.cores integer Number of cores in mclapply (default = 5)
+#' @param verbose boolean "verbose" flag (default = FALSE)
+#' @return GRanges format of the csv/parquet files combined
+#' @author jsxu
+#' 
+#' @export
+
+csv2gr <- function(path = NULL, col_names = NULL, save_path = NULL, suffix = '*pore_c.csv*', prefix = NULL, mc.cores = 5, verbose = TRUE){
+  
+  if (is.null(path)){
+    stop("Need a valid path to all pore-c csv files.")
+  }
+  
+  all.paths <- data.table(file_path=dir(path, all.files = TRUE, recursive = TRUE, full.names = TRUE))[grepl(suffix, file_path)]
+  
+  if (nrow(all.paths) == 0){
+    stop("No valid files with suffix pore_c.csv found.")
+  }
+  
+  if (verbose){"Begining to read csv files..."}
+  
+  if (is.null(col_names)){col_names <- c("read_name", "chrom", "start", "end", "pass_filter")}
+  
+  parq.list <- pbmcapply::pbmclapply(1:nrow(all.paths), function(k){
+    parq.al = fread(all.paths[k]$file_path, select = col_names)
+    # parq.al = read_csv(all.paths[k]$file_path, col_select = col_names)
+    # parq.al = as.data.table(parq.al)
+    return(parq.al)
+  }, mc.cores = mc.cores)
+  
+  parq.dt <- rbindlist(parq.list, fill = TRUE)
+  
+  parq.dt[, read_idx := .GRP, by=read_name]
+  uni.dt <- unique(parq.dt[, .(read_name, read_idx)])
+  uni.dt[, fr.read_name := .N, by=read_name]
+  uni.dt[, fr.read_idx := .N, by=read_idx]
+  
+  if (!any(uni.dt$fr.read_name > 1)){
+    if(!any(uni.dt$fr.read_idx > 1)){
+      rm(uni.dt)
+    } else {
+      message("Duplicate read_idx found, check this field in the output")
+    }
+  } else {
+    message("Duplicate read_name found, make all files belong to a single, unique sample")
+  }
+  
+  parq.gr <- dt2gr(parq.dt)
+  
+  if (!is.null(save_path)){
+    saveRDS(parq.gr, paste0(save_path, "/", prefix, ".rds"))
+  }
+  
+  return(parq.gr)
+}
+
+
+
+
+
 #' @name parquet2gr
 #' @description
 #' Converts parquet format from Pore-C snakemake pipeline to a single gRanges object
