@@ -849,7 +849,7 @@ chromunity = function(concatemers, resolution = 5e4, region = si2gr(concatemers)
     if (verbose)
       cmessage(sprintf('Running concatemer communities with %s concatemers and %s bins', ncat, nbin))
     
-    cc = concatemer_communities(concatemers, k.knn = k.knn, k.min = k.min, seed = seed, max.size = max.size, verbose = verbose, subsample.frac = subsample.frac)
+    cc = concatemer_communities(concatemers, shave = shave, k.knn = k.knn, k.min = k.min, seed = seed, max.size = max.size, verbose = verbose, subsample.frac = subsample.frac)
 
     if (length(cc))
       cc = cc %Q% (support>=min.support)
@@ -937,7 +937,7 @@ shave_concatemers = function(concatemers, cthresh = 3, bthresh = 2, verbose = TR
 #' @param subsample.frac optional arg specifying fraction of concatemers to subsample [NULL]
 #' @param seed seed for subsampling
 #' @return GRanges of concatemers labeled by $c mmunity which specifies community id
-concatemer_communities = function (concatemers, k.knn = 25, k.min = 5,
+concatemer_communities = function (concatemers, shave = FALSE, k.knn = 25, k.min = 5,
     drop.small = FALSE, small = 1e4, max.size = 2^31-1,
     subsample.frac = NULL, seed = 42, verbose = TRUE, debug = FALSE)  
 {
